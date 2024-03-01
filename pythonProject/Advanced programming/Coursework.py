@@ -60,16 +60,16 @@ class DataPoint:
         response = requests.get(url)
         if response.status_code == 200:
             self.data = response.json()
-            #return self.data
+            return self.data
 api_key = "91d1d1e0-7ea0-4008-a2fc-130fcca7bbe2"
 datapoint = DataPoint(api_key)
 location_id = '310012'
 # Get the data using the get_data method
 site_data = datapoint.get_forecast(location_id)
-#print(site_data)
+print(site_data)
 
 
-#STEP 4
+#STEP 4: Task 1
 class DataPoint:
     def __init__(self, api_key):
         self.api_key = api_key
@@ -90,60 +90,64 @@ class DataPoint:
              print(f"Failed to retrieve data: {response.status_code}")
              return pd.DataFrame()  # Return an empty DataFrame on failure
 
+    def fetch_location_ids(self):
+            # Fetch the list of locations
+        url = f"{self.base_url}val/wxfcs/all/json/sitelist?key={self.api_key}"
+        response = requests.get(url)
+        if response.status_code == 200:
+           data = response.json()
+                # Extract location IDs
+           locations = data['Locations']['Location']
+           location_ids = [location['id'] for location in locations]
+           return location_ids
+        else:
+            print(f"Failed to retrieve locations: {response.status_code}")
+            return []
+
     def get_forecast_data(self, location_ids):
-        # DataFrame to store all forecast data
-        forecast_data = pd.DataFrame()
+        forecast_data_list = []  # Initialize the list to store DataFrames
         for location_id in location_ids:
-            # Endpoint for 3-hourly forecasts
-            url = (f"{self.base_url}val/wxfcs/all/JSON/{location_id}"
-                   f"?res=3hourly&key={self.api_key}")
+                # Endpoint for 3-hourly forecasts
+            url = f"{self.base_url}val/wxfcs/all/json/{location_id}?res=3hourly&key={self.api_key}"
             response = requests.get(url)
             if response.status_code == 200:
-                # Parse the forecast data for the location and append to the DataFrame
-                data = response.json()['SiteRep']['DV']['Location']['Period']
-                for period in data:
-                    df = pd.DataFrame(period['Rep'])
-                    df['date'] = period['value']
-                    forecast_data = forecast_data.append(df, ignore_index=True)
+                try:
+                    data = response.json()['SiteRep']['DV']['Location']['Period']
+                    for period in data:
+                        df = pd.DataFrame(period['Rep'])
+                        df['date'] = period['value']
+                        df['location_id'] = location_id  # Add the location ID to the DataFrame
+                        forecast_data_list.append(df)
+                except json.JSONDecodeError as e:
+                    print(f"JSON decoding failed for location {location_id}: {e}")
             else:
-                response.raise_for_status()
+                print(f"Failed to retrieve data for location {location_id}: {response.status_code}")
+            # Concatenate all DataFrames in the list
+        forecast_data = pd.concat(forecast_data_list, ignore_index=True) if forecast_data_list else pd.DataFrame()
         return forecast_data
 
-api_key = "91d1d1e0-7ea0-4008-a2fc-130fcca7bbe2"  # Replace with your actual API key
+    # Usage
+api_key = "91d1d1e0-7ea0-4008-a2fc-130fcca7bbe2"
 datapoint = DataPoint(api_key)
-        # Example usage:
+location_ids = datapoint.fetch_location_ids()
 
-print(datapoint.get_location_id('Liverpool'))
-print("Forecast data for location IDs ['123', '456']:")
-#print(datapoint.get_forecast_data('310012'))
+    # Fetching forecast data for the first 30 locations
+forecast_data = datapoint.get_forecast_data(location_ids[:30])
+# print(datapoint.get_location_id('Liverpool'))
+# print(forecast_data)
+
+#Task 2.1: save forecast data into a csv file
+forecast_data.to_csv('forecast_data.csv', index=False)
+
+#Task 2.2
+forecast_data = pd.read_csv('forecast_data.csv')
+print(forecast_data.head())
 
 
 
 
-#def get_forecast_data(self, location_ids):
-#         """
-#         Retrieve the three-hourly five-day forecast data for multiple locations.
-#
-#         :param location_ids: list of str, the location IDs to retrieve forecast data for
-#         :return: DataFrame, the forecast data for the given locations
-#         """
-#         forecast_data = pd.DataFrame()
-#
-#         for location_id in location_ids:
-#             url = f"{self.base_url}val/wxfcs/all/JSON/{location_id}?res=3hourly&key={self.api_key}"
-#             try:
-#                 response = requests.get(url)
-#                 response.raise_for_status()  # Raise an HTTPError if the HTTP request returned an unsuccessful status code
-#                 data = response.json()['SiteRep']['DV']['Location']['Period']
-#
-#                 # Process each period of forecasts
-#                 for period in data:
-#                     df = pd.DataFrame(period['Rep'])
-#                     df['date'] = period['value']
-#                     forecast_data = pd.concat([forecast_data, df], ignore_index=True)
-#             except requests.RequestException as e:
-#                 print(f"Request failed: {e}")
-#         return forecast_data
+
+
 
 
 
