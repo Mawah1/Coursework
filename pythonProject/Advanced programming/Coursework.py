@@ -141,13 +141,19 @@ forecast_data.to_csv('forecast_data.csv', index=False)
 
 #Task 2.2
 forecast_data = pd.read_csv('forecast_data.csv')
+#print(forecast_data.head())
+
+#Task 2.3:
+new_column_names = {'D': 'Wind Direction', 'F': 'Feels Like Temperature', 'G': 'Wind Gust', 'H': 'Screen Relative Humidity', 'Pp': 'Precipitation Probability', 'S': 'Wind Speed',
+                    'T': 'Temperature', 'V': 'Visibility', 'W': 'Weather Type', 'U': 'Max UV Index'}
+forecast_data.rename(columns=new_column_names, inplace=True)
+#verify that this has been done
+#print(forecast_data.head())
+
+#Task 2.4
+del forecast_data['$']
+#verify this has been done as number of columns should reduce from 13 to 12
 print(forecast_data.head())
-
-
-
-
-
-
 
 
 
