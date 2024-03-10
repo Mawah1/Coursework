@@ -4,23 +4,26 @@ import json
 #Display the whole dataframe to see the type of dataset (its attributes and entities) that is available
 #the format belwo displays the data structure as a dictionary
 #STEP 1
-# class DataPoint:
-#     def __init__(self, api_key):
-#         self.api_key = api_key
-#         self.base_url = "http://datapoint.metoffice.gov.uk/public/data/"
-#         self.data = None
-#     def get_data(self):
-#         url = f"{self.base_url}val/wxfcs/all/json/sitelist?key={self.api_key}"
-#         response = requests.get(url)
-#         if response.status_code == 200:
-#             self.data = response.json()
-#             return self.data
-# api_key = "91d1d1e0-7ea0-4008-a2fc-130fcca7bbe2"
-# datapoint = DataPoint(api_key)
-#
-# # Get the data using the get_data method
-# site_data = datapoint.get_data()
-# print(site_data)
+class DataPoint1:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "http://datapoint.metoffice.gov.uk/public/data/"
+        self.data = None
+    def get_data(self):
+        url = f"{self.base_url}val/wxfcs/all/json/sitelist?key={self.api_key}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            self.data = response.json()
+            return self.data
+api_key = "91d1d1e0-7ea0-4008-a2fc-130fcca7bbe2"
+datapoint = DataPoint1(api_key)
+
+# Get the data using the get_data method
+site_data = datapoint.get_data()
+#print(site_data)
+
+
+
 
 
 
@@ -49,8 +52,8 @@ import json
 
 
 #STEP 3
-#Display the weather forecast Dictionary
-class DataPoint:
+#Display the weather forecast Dictionary for liverpool
+class Datapoint:
     def __init__(self, api_key):
         self.api_key = api_key
         self.base_url = "http://datapoint.metoffice.gov.uk/public/data/"
@@ -62,11 +65,11 @@ class DataPoint:
             self.data = response.json()
             return self.data
 api_key = "91d1d1e0-7ea0-4008-a2fc-130fcca7bbe2"
-datapoint = DataPoint(api_key)
+datapoint = Datapoint(api_key)
 location_id = '310012'
 # Get the data using the get_data method
 site_data = datapoint.get_forecast(location_id)
-print(site_data)
+#print(site_data)
 
 
 #STEP 4: Task 1
@@ -151,12 +154,57 @@ forecast_data.rename(columns=new_column_names, inplace=True)
 #print(forecast_data.head())
 
 #Task 2.4
+pd.set_option('display.max_columns', None)
 del forecast_data['$']
 #verify this has been done as number of columns should reduce from 13 to 12
-print(forecast_data.head())
+#print(forecast_data.head())
 
 
+#Task 2.5
+#Create a sample weather_mapping dictionary
+weather_mapping = {
+    None: "Not available",
+    -1: "Trace rain",
+    0: "Clear",
+    1: "Clear",
+    2: "Partly cloudy",
+    3: "Partly cloudy",
+    4: "Not used",
+    5: "Low visibility",
+    6: "Low visibility",
+    7: "Cloudy",
+    8: "Cloudy",
+    9: "Light rain",
+    10: "Light rain",
+    11: "Light rain",
+    12: "Light rain",
+    13: "Heavy rain",
+    14: "Heavy rain",
+    15: "Heavy rain",
+    16: "Sleet",
+    17: "Sleet",
+    18: "Sleet",
+    19: "Hail",
+    20: "Hail",
+    21: "Hail",
+    22: "Light snow",
+    23: "Light snow",
+    24: "Light snow",
+    25: "Heavy snow",
+    26: "Heavy snow",
+    27: "Heavy snow",
+    28: "Thunder",
+    29: "Thunder",
+    30: "Thunder"
+}
 
+# Map the weather descriptions to broader categories
+forecast_data['Weather Type'] = forecast_data['Weather Type'].map(weather_mapping)
+pd.set_option('display.max_columns', None)
+#print(forecast_data.head())
+
+
+forecast_data.to_csv('C:\\Users\\atang\\OneDrive\\Documents\\Data Science MSc\\Advanced programming for data science\\data_processed.csv.csv', index=False)
 
 
 
