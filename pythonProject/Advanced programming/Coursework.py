@@ -1,6 +1,10 @@
 import requests
 import pandas as pd
 import json
+from sklearn.model_selection import train_test_split
+from sklearn import linear_model
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
 #Display the whole dataframe to see the type of dataset (its attributes and entities) that is available
 #the format belwo displays the data structure as a dictionary
 #STEP 1
@@ -204,10 +208,77 @@ pd.set_option('display.max_columns', None)
 #print(forecast_data.head())
 
 
-forecast_data.to_csv('C:\\Users\\atang\\OneDrive\\Documents\\Data Science MSc\\Advanced programming for data science\\data_processed.csv.csv', index=False)
+#forecast_data.to_csv('C:\\Users\\atang\\OneDrive\\Documents\\Data Science MSc\\Advanced programming for data science\\data_processed.csv.csv', index=False)
+
+#task 3
 
 
 
 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.neighbors import KNeighborsClassifier  # As an example of a second algorithm
+import pandas as pd
 
+# Load your dataset
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+
+
+# load the dataset
+weather_data = pd.read_csv('C:\\Users\\atang\\OneDrive\\Documents\\Data Science MSc\\Advanced programming for data science\\data_processed.csv.csv')
+# Prepare the data
+# Preprocess the dataset
+label_encoder = LabelEncoder()
+weather_data['Wind Direction'] = label_encoder.fit_transform(weather_data['Wind Direction'])
+weather_data['Visibility'] = label_encoder.fit_transform(weather_data['Visibility'])
+
+# If 'Weather Type' is categorical, encode it as well
+weather_data['Weather Type'] = label_encoder.fit_transform(weather_data['Weather Type'])
+
+# Drop 'date' and 'location_id' if they're not useful for prediction
+X = weather_data.drop(['Weather Type', 'date', 'location_id'], axis=1) #features
+y = weather_data['Weather Type'] #target variable
+
+# Split the data with stratified sampling
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, stratify=y)
+
+# Ensure the features are scaled
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
+# Create the models with balanced class weights
+rf_clf = RandomForestClassifier(n_estimators=100, class_weight='balanced', random_state=42)
+log_reg = make_pipeline(StandardScaler(), LogisticRegression(max_iter=100000, class_weight='balanced', solver='saga'))
+
+
+# Train the RandomForestClassifier
+rf_clf.fit(X_train, y_train)
+
+# Train the LogisticRegression
+log_reg.fit(X_train, y_train)
+
+# Predictions from RandomForestClassifier
+rf_predictions = rf_clf.predict(X_test)
+
+# Predictions from LogisticRegression
+log_reg_predictions = log_reg.predict(X_test)
+
+# Evaluation of RandomForestClassifier
+print("Random Forest Classifier Report")
+print(classification_report(y_test, rf_predictions))
+
+# Evaluation of LogisticRegression
+print("Logistic Regression Report")
+print(classification_report(y_test, log_reg_predictions))
 
